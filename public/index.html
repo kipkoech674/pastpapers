@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campus Past Papers Hub</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark">CP</div>
+          <div>
+            <p class="brand-tag">Kenya Student Platform</p>
+            <h1>Campus Past Papers Hub</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span id="authStatus" class="status-pill">Not signed in</span>
+          <button id="logoutBtn" class="ghost-button hidden">Log out</button>
+        </div>
+      </header>
+
+      <main class="container">
+        <section class="hero panel">
+          <div>
+            <p class="eyebrow">Study smarter</p>
+            <h2>Find, save and revise past papers faster.</h2>
+            <p class="muted">
+              Search by university, course, year and semester. Upload your own papers, bookmark revision material and view PDFs in-browser.
+            </p>
+          </div>
+          <div class="stats-grid">
+            <div>
+              <strong id="paperCount">0</strong>
+              <span>papers</span>
+            </div>
+            <div>
+              <strong id="bookmarkCount">0</strong>
+              <span>bookmarks</span>
+            </div>
+            <div>
+              <strong id="uniCount">0</strong>
+              <span>universities</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="authSection" class="auth-grid">
+          <div class="panel">
+            <h3>Create student account</h3>
+            <form id="registerForm" class="stack-form">
+              <input type="text" name="name" placeholder="Full name" required />
+              <input type="email" name="email" placeholder="Email address" required />
+              <input type="text" name="university" placeholder="University" />
+              <input type="password" name="password" placeholder="Password" required />
+              <button type="submit" class="primary-button">Register</button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <h3>Welcome back</h3>
+            <form id="loginForm" class="stack-form">
+              <input type="email" name="email" placeholder="Email address" required />
+              <input type="password" name="password" placeholder="Password" required />
+              <button type="submit" class="primary-button">Login</button>
+            </form>
+          </div>
+        </section>
+
+        <section id="dashboardSection" class="dashboard hidden">
+          <div class="panel search-panel">
+            <div class="section-header">
+              <h3>Search papers</h3>
+            </div>
+            <form id="searchForm" class="search-grid">
+              <input type="text" id="searchInput" placeholder="Search title, course, keyword" />
+              <input type="text" id="universityFilter" placeholder="University" />
+              <input type="text" id="courseFilter" placeholder="Course" />
+              <input type="number" id="yearFilter" placeholder="Year" min="2000" max="2100" />
+              <input type="text" id="semesterFilter" placeholder="Semester" />
+              <button type="submit" class="primary-button">Apply</button>
+            </form>
+          </div>
+
+          <div class="content-grid">
+            <div class="panel list-panel">
+              <div class="section-header">
+                <h3>Available papers</h3>
+              </div>
+              <div id="paperList" class="paper-list"></div>
+            </div>
+
+            <div class="panel viewer-panel">
+              <div class="section-header viewer-header">
+                <h3 id="viewerTitle">PDF viewer</h3>
+                <button id="bookmarkBtn" class="ghost-button">Bookmark</button>
+              </div>
+              <iframe id="pdfViewer" title="PDF Viewer" src="about:blank"></iframe>
+            </div>
+          </div>
+
+          <div class="panel upload-panel">
+            <div class="section-header">
+              <h3>Upload a paper</h3>
+            </div>
+            <form id="uploadForm" class="upload-grid">
+              <input type="text" name="title" placeholder="Paper title" required />
+              <input type="text" name="university" placeholder="University" required />
+              <input type="text" name="course" placeholder="Course" required />
+              <input type="number" name="year" placeholder="Year" min="2000" max="2100" required />
+              <input type="text" name="semester" placeholder="Semester" required />
+              <textarea name="description" rows="3" placeholder="Short description"></textarea>
+              <input type="file" name="file" accept="application/pdf" required />
+              <button type="submit" class="primary-button">Upload paper</button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

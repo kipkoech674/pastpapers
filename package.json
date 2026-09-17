@@ -1,0 +1,17 @@
+{
+  "name": "campus-past-papers-hub",
+  "version": "1.0.0",
+  "description": "Campus Past Papers Hub for Kenyan students",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
+    "sql.js": "^1.13.0"
+  }
+}
