@@ -1,6 +1,22 @@
+function safeParseUser() {
+  const rawUser = localStorage.getItem('campusHubUser');
+  if (!rawUser || rawUser === 'undefined' || rawUser === 'null') {
+    localStorage.removeItem('campusHubUser');
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawUser);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (_error) {
+    localStorage.removeItem('campusHubUser');
+    return null;
+  }
+}
+
 const state = {
   token: localStorage.getItem('campusHubToken') || '',
-  user: JSON.parse(localStorage.getItem('campusHubUser') || 'null'),
+  user: safeParseUser(),
   papers: [],
   selectedPaperId: null,
   filters: {
