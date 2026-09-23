@@ -247,7 +247,6 @@ function seedSampleData() {
 }
 
 app.use(express.json({ limit: '5mb' }));
-app.use('/uploads', express.static(uploadsDir));
 app.use(express.static(path.join(rootDir, 'public')));
 
 app.get('/api/health', (_req, res) => {
@@ -372,7 +371,14 @@ app.post('/api/papers', authRequired, (req, res) => {
 
     const { title, university, course, year, semester, description } = req.body;
     if (!title || !university || !course || !year || !semester || !req.file) {
+      if (req.file) fs.unlinkSync(req.file.path);
       return res.status(400).json({ message: 'Title, university, course, year, semester and PDF file are required.' });
+    }
+
+    const numericYear = Number(year);
+    if (!Number.isInteger(numericYear) || numericYear < 2000 || numericYear > 2100) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ message: 'Year must be a whole number between 2000 and 2100.' });
     }
 
     executeWrite(
@@ -382,17 +388,20 @@ app.post('/api/papers', authRequired, (req, res) => {
         title.trim(),
         university.trim(),
         course.trim(),
-        Number(year),
+        numericYear,
         semester.trim(),
         description ? description.trim() : '',
         req.file.filename,
         req.file.originalname,
-        `/uploads/${req.file.filename}`,
+        '',
         req.user.id
       ]
     );
 
     const savedPaper = queryOne('SELECT * FROM papers WHERE file_name = ?', [req.file.filename]);
+    const fileUrl = `/api/papers/${savedPaper.id}/file`;
+    executeWrite('UPDATE papers SET file_url = ? WHERE id = ?', [fileUrl, savedPaper.id]);
+    savedPaper.file_url = fileUrl;
     res.status(201).json({
       paper: {
         ...savedPaper,
@@ -402,6 +411,24 @@ app.post('/api/papers', authRequired, (req, res) => {
       }
     });
   });
+});
+
+app.get('/api/papers/:id/file', authRequired, (req, res) => {
+  const paper = queryOne('SELECT * FROM papers WHERE id = ?', [Number(req.params.id)]);
+  if (!paper) {
+    return res.status(404).json({ message: 'Paper not found.' });
+  }
+
+  const filePath = path.resolve(uploadsDir, paper.file_name);
+  if (!filePath.startsWith(`${path.resolve(uploadsDir)}${path.sep}`) || !fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'The paper file is unavailable.' });
+  }
+
+  const safeDownloadName = paper.original_name.replace(/[^a-zA-Z0-9._-]/g, '-');
+  const disposition = req.query.download === '1' ? 'attachment' : 'inline';
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `${disposition}; filename="${safeDownloadName}"`);
+  res.sendFile(filePath);
 });
 
 app.get('/api/papers/:id', authRequired, (req, res) => {

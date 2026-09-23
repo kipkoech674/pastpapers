@@ -39,6 +39,8 @@ const uniCount = document.getElementById('uniCount');
 const viewerTitle = document.getElementById('viewerTitle');
 const pdfViewer = document.getElementById('pdfViewer');
 const bookmarkBtn = document.getElementById('bookmarkBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+let viewerObjectUrl = '';
 
 function setAuthUI() {
   if (state.token && state.user) {
@@ -172,7 +174,27 @@ async function selectPaper(id) {
   if (!selected) return;
 
   viewerTitle.textContent = selected.title;
-  pdfViewer.src = selected.fileUrl || 'about:blank';
+  downloadBtn.disabled = false;
+
+  if (viewerObjectUrl) {
+    URL.revokeObjectURL(viewerObjectUrl);
+    viewerObjectUrl = '';
+  }
+
+  try {
+    const isLocalFile = selected.fileUrl && selected.fileUrl.startsWith('/api/papers/');
+    const fileResponse = await fetch(isLocalFile ? selected.fileUrl : selected.fileUrl || 'about:blank', {
+      headers: isLocalFile ? { Authorization: `Bearer ${state.token}` } : {}
+    });
+    if (!fileResponse.ok) {
+      throw new Error('The paper file could not be opened.');
+    }
+    viewerObjectUrl = URL.createObjectURL(await fileResponse.blob());
+    pdfViewer.src = viewerObjectUrl;
+  } catch (error) {
+    pdfViewer.src = 'about:blank';
+    alert(error.message);
+  }
 
   if (state.token) {
     const result = await apiRequest(`/api/papers/${id}`);
@@ -300,14 +322,46 @@ async function handleSearch(event) {
 logoutBtn.addEventListener('click', () => {
   clearSession();
   state.papers = [];
+  state.selectedPaperId = null;
+  if (viewerObjectUrl) {
+    URL.revokeObjectURL(viewerObjectUrl);
+    viewerObjectUrl = '';
+  }
   renderPaperList();
   pdfViewer.src = 'about:blank';
   viewerTitle.textContent = 'PDF viewer';
+  downloadBtn.disabled = true;
 });
 
 bookmarkBtn.addEventListener('click', async () => {
   if (!state.selectedPaperId) return;
   await toggleBookmark(state.selectedPaperId);
+});
+
+downloadBtn.addEventListener('click', async () => {
+  if (!state.selectedPaperId || !state.token) return;
+
+  try {
+    const selected = state.papers.find((paper) => paper.id === state.selectedPaperId);
+    const isLocalFile = selected?.fileUrl && selected.fileUrl.startsWith('/api/papers/');
+    const fileUrl = isLocalFile ? `${selected.fileUrl}?download=1` : selected?.fileUrl;
+    const response = await fetch(fileUrl, {
+      headers: isLocalFile ? { Authorization: `Bearer ${state.token}` } : {}
+    });
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.message || 'Download failed.');
+    }
+
+    const downloadUrl = URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = selected?.originalName || 'past-paper.pdf';
+    link.click();
+    URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    alert(error.message);
+  }
 });
 
 document.getElementById('registerForm').addEventListener('submit', handleRegister);

@@ -95,7 +95,10 @@
             <div class="panel viewer-panel">
               <div class="section-header viewer-header">
                 <h3 id="viewerTitle">PDF viewer</h3>
-                <button id="bookmarkBtn" class="ghost-button">Bookmark</button>
+                <div class="viewer-actions">
+                  <button id="bookmarkBtn" class="ghost-button">Bookmark</button>
+                  <button id="downloadBtn" class="primary-button" type="button" disabled>Download</button>
+                </div>
               </div>
               <iframe id="pdfViewer" title="PDF Viewer" src="about:blank"></iframe>
             </div>
